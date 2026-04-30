@@ -1,11 +1,9 @@
-import bcrypt from 'bcryptjs'
 import { SignJWT, jwtVerify } from 'jose'
 import { store } from './kv'
 
 const JWT_SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET ?? 'dev-secret-change-in-production'
 )
-const SALT_ROUNDS = 10
 
 export type Account = {
   gameId: string
@@ -35,12 +33,51 @@ export async function listAccounts(): Promise<Account[]> {
   return accounts.filter(Boolean)
 }
 
-export async function hashPassword(password: string): Promise<string> {
-  return bcrypt.hash(password, SALT_ROUNDS)
+// --- Password hashing using Web Crypto (no native modules needed) ---
+
+async function sha256(data: string): Promise<ArrayBuffer> {
+  const encoded = new TextEncoder().encode(data)
+  return crypto.subtle.digest('SHA-256', encoded)
 }
 
-export async function verifyPassword(password: string, hash: string): Promise<boolean> {
-  return bcrypt.compare(password, hash)
+function bufToHex(buf: ArrayBuffer): string {
+  return Array.from(new Uint8Array(buf))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('')
+}
+
+async function pbkdf2Hash(password: string, salt: string): Promise<string> {
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(password),
+    'PBKDF2',
+    false,
+    ['deriveBits']
+  )
+  const bits = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', hash: 'SHA-256', salt: new TextEncoder().encode(salt), iterations: 100000 },
+    keyMaterial,
+    256
+  )
+  return bufToHex(bits)
+}
+
+async function randomSalt(): Promise<string> {
+  const buf = crypto.getRandomValues(new Uint8Array(16))
+  return bufToHex(buf.buffer)
+}
+
+export async function hashPassword(password: string): Promise<string> {
+  const salt = await randomSalt()
+  const hash = await pbkdf2Hash(password, salt)
+  return `${salt}:${hash}`
+}
+
+export async function verifyPassword(password: string, stored: string): Promise<boolean> {
+  const [salt, expectedHash] = stored.split(':')
+  if (!salt || !expectedHash) return false
+  const hash = await pbkdf2Hash(password, salt)
+  return hash === expectedHash
 }
 
 export async function signToken(gameId: string): Promise<string> {
@@ -59,7 +96,6 @@ export async function verifyToken(token: string): Promise<{ gameId: string } | n
   }
 }
 
-// Seed default admin on first run
 export async function ensureDefaultAdmin(): Promise<void> {
   const existing = await getAccount('0')
   if (!existing) {
