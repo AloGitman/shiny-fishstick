@@ -20,9 +20,11 @@ export default function LoginPanel({ onLogin }: { onLogin: (s: Session) => void 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ gameId, password }),
       })
-      const data = await res.json()
+      const text = await res.text()
+      let data: Record<string, string> = {}
+      try { data = JSON.parse(text) } catch { data = { error: `Server returned: ${text || res.status}` } }
       if (!res.ok) { setError(data.error ?? 'Login failed'); return }
-      onLogin(data as Session)
+      onLogin(data as unknown as Session)
     } catch (e: unknown) {
       setError('Network error: ' + (e instanceof Error ? e.message : String(e)))
     } finally {
