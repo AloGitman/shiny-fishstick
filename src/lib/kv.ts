@@ -1,5 +1,3 @@
-import { put, del, list } from '@vercel/blob'
-
 const mem: Record<string, unknown> = {}
 const USE_BLOB = !!process.env.BLOB_READ_WRITE_TOKEN
 
@@ -9,10 +7,12 @@ function blobPath(key: string) {
 
 async function blobRead(key: string): Promise<unknown> {
   try {
-    const { blobs } = await list({ prefix: blobPath(key) })
-    const found = blobs.find(b => b.pathname === blobPath(key))
+    const { list } = await import('@vercel/blob')
+    const path = blobPath(key)
+    const { blobs } = await list({ prefix: path })
+    const found = blobs.find((b: { pathname: string }) => b.pathname === path)
     if (!found) return null
-    const res = await fetch(found.url, { cache: 'no-store' })
+    const res = await fetch((found as { url: string }).url, { cache: 'no-store' })
     if (!res.ok) return null
     return await res.json()
   } catch {
@@ -21,6 +21,7 @@ async function blobRead(key: string): Promise<unknown> {
 }
 
 async function blobWrite(key: string, value: unknown): Promise<void> {
+  const { put } = await import('@vercel/blob')
   await put(blobPath(key), JSON.stringify(value), {
     access: 'public',
     contentType: 'application/json',
@@ -30,18 +31,25 @@ async function blobWrite(key: string, value: unknown): Promise<void> {
 
 async function blobDelete(key: string): Promise<void> {
   try {
-    const { blobs } = await list({ prefix: blobPath(key) })
-    const found = blobs.find(b => b.pathname === blobPath(key))
-    if (found) await del(found.url)
+    const { list, del } = await import('@vercel/blob')
+    const path = blobPath(key)
+    const { blobs } = await list({ prefix: path })
+    const found = blobs.find((b: { pathname: string }) => b.pathname === path)
+    if (found) await del((found as { url: string }).url)
   } catch {}
 }
 
 async function blobKeys(pattern: string): Promise<string[]> {
-  const prefix = blobPath(pattern.replace('*', ''))
-  const { blobs } = await list({ prefix })
-  return blobs.map(b =>
-    b.pathname.replace(/^kv\//, '').replace(/\.json$/, '')
-  )
+  try {
+    const { list } = await import('@vercel/blob')
+    const prefix = blobPath(pattern.replace('*', ''))
+    const { blobs } = await list({ prefix })
+    return blobs.map((b: { pathname: string }) =>
+      b.pathname.replace(/^kv\//, '').replace(/\.json$/, '')
+    )
+  } catch {
+    return []
+  }
 }
 
 export const store = {
