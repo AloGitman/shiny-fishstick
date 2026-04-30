@@ -23,8 +23,8 @@ export default function LoginPanel({ onLogin }: { onLogin: (s: Session) => void 
       const data = await res.json()
       if (!res.ok) { setError(data.error ?? 'Login failed'); return }
       onLogin(data as Session)
-    } catch {
-      setError('Network error')
+    } catch (e: unknown) {
+      setError('Network error: ' + (e instanceof Error ? e.message : String(e)))
     } finally {
       setLoading(false)
     }
