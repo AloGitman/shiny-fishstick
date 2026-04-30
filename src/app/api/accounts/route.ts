@@ -1,3 +1,5 @@
+export const runtime = 'nodejs'
+
 import { NextRequest, NextResponse } from 'next/server'
 import { deleteAccount, getAccount, hashPassword, listAccounts, saveAccount, verifyToken } from '@/lib/auth'
 
