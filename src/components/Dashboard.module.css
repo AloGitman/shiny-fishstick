@@ -1,0 +1,167 @@
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 220px;
+  background: var(--card);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.sidebarHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 16px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebarLogo { font-size: 22px; }
+
+.sidebarTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.nav {
+  flex: 1;
+  padding: 12px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.navBtn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 13px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  text-align: left;
+  transition: background 0.15s, color 0.15s;
+}
+
+.navBtn:hover { background: var(--card2); color: var(--text); }
+
+.navActive {
+  background: var(--card2) !important;
+  color: var(--accent) !important;
+  font-weight: 600;
+}
+
+.sidebarFooter {
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gameId { font-size: 11px; color: var(--muted); }
+
+.logoutBtn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 12px;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.logoutBtn:hover { border-color: var(--red); color: var(--red); }
+
+.main {
+  flex: 1;
+  overflow: auto;
+  padding: 24px;
+}
+
+.lookupLayout {
+  display: flex;
+  gap: 24px;
+  height: 100%;
+}
+
+.animalList {
+  width: 220px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.searchWrap {}
+
+.searchInput {
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 12px;
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+}
+
+.searchInput:focus { border-color: var(--accent); }
+
+.animalItems {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.animalItem {
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 13px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  text-align: left;
+  transition: background 0.12s;
+}
+
+.animalItem:hover { background: var(--card); }
+
+.animalItemActive {
+  background: var(--card2) !important;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.empty {
+  font-size: 12px;
+  color: var(--muted);
+  padding: 12px;
+  line-height: 1.5;
+}
+
+.cardArea {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.placeholder span { font-size: 32px; }
+
+.errText { color: var(--red); }

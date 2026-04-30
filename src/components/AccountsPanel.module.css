@@ -1,0 +1,124 @@
+.panel {
+  max-width: 700px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.heading {
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.createCard, .listCard {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid var(--border);
+}
+
+.subHeading {
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 14px;
+}
+
+.createForm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.input {
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 12px;
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+  min-width: 140px;
+}
+
+.input:focus { border-color: var(--accent); }
+
+.checkLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.error {
+  font-size: 12px;
+  color: var(--red);
+  width: 100%;
+}
+
+.createBtn {
+  background: var(--accent);
+  color: #0d1117;
+  border: none;
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.createBtn:hover:not(:disabled) { opacity: 0.85; }
+.createBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.muted { font-size: 13px; color: var(--muted); }
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.table th {
+  text-align: left;
+  color: var(--muted);
+  font-weight: 600;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.table td {
+  padding: 10px 10px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+
+.table tr:last-child td { border-bottom: none; }
+
+.currentRow td { color: var(--accent); }
+
+.adminBadge {
+  background: rgba(79, 195, 247, 0.15);
+  color: var(--accent);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.deleteBtn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--red);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  transition: background 0.15s;
+}
+
+.deleteBtn:hover { background: rgba(229, 57, 53, 0.1); }
