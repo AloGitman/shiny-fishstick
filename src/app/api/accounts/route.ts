@@ -1,63 +1,49 @@
 export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { deleteAccount, getAccount, hashPassword, listAccounts, saveAccount, verifyToken } from '@/lib/auth'
-
-async function requireAdmin(req: NextRequest) {
-  const token = req.headers.get('authorization')?.replace('Bearer ', '')
-  if (!token) return null
-  const payload = await verifyToken(token)
-  if (!payload) return null
-  const account = await getAccount(payload.gameId)
-  if (!account?.isAdmin) return null
-  return account
-}
-
-export async function GET(req: NextRequest) {
-  const admin = await requireAdmin(req)
-  if (!admin) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-
-  const accounts = await listAccounts()
-  return NextResponse.json(accounts.map(a => ({
-    gameId: a.gameId,
-    isAdmin: a.isAdmin,
-    mustChangePassword: a.mustChangePassword,
-    createdAt: a.createdAt,
-  })))
-}
 
 export async function POST(req: NextRequest) {
-  const admin = await requireAdmin(req)
-  if (!admin) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  try {
+    const body = await req.text()
+    let parsed: { gameId?: string; password?: string } = {}
+    try { parsed = JSON.parse(body) } catch {}
 
-  const { gameId, password, isAdmin } = await req.json()
-  if (!gameId || !password)
-    return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
+    const { gameId, password } = parsed
 
-  const existing = await getAccount(String(gameId))
-  if (existing)
-    return NextResponse.json({ error: 'Account already exists' }, { status: 409 })
+    if (!gameId || !password) {
+      return NextResponse.json({ error: 'Missing credentials' }, { status: 400 })
+    }
 
-  await saveAccount({
-    gameId: String(gameId),
-    passwordHash: await hashPassword(password),
-    isAdmin: !!isAdmin,
-    mustChangePassword: true,
-    createdAt: Date.now(),
-  })
+    // Lazy-load everything to avoid top-level import crashes
+    const { ensureDefaultAdmin, getAccount, signToken, verifyPassword } = await import('@/lib/auth')
 
-  return NextResponse.json({ ok: true })
-}
+    await ensureDefaultAdmin()
 
-export async function DELETE(req: NextRequest) {
-  const admin = await requireAdmin(req)
-  if (!admin) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    const account = await getAccount(String(gameId))
+    if (!account) {
+      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
+    }
 
-  const { gameId } = await req.json()
-  if (!gameId) return NextResponse.json({ error: 'Missing gameId' }, { status: 400 })
-  if (String(gameId) === '0')
-    return NextResponse.json({ error: 'Cannot delete root admin' }, { status: 400 })
+    const valid = await verifyPassword(password, account.passwordHash)
+    if (!valid) {
+      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
+    }
 
-  await deleteAccount(String(gameId))
-  return NextResponse.json({ ok: true })
+    const token = await signToken(account.gameId)
+
+    return NextResponse.json({
+      token,
+      gameId: account.gameId,
+      isAdmin: account.isAdmin,
+      mustChangePassword: account.mustChangePassword,
+    })
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.stack ?? err.message : String(err)
+    console.error('[login]', msg)
+    return new Response(JSON.stringify({ error: msg }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    })
+  }
 }
