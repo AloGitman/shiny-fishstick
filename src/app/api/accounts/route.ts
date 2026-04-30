@@ -2,10 +2,10 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 import { NextRequest } from 'next/server'
+import { ensureDefaultAdmin, getAccount, signToken, verifyPassword } from '@/lib/auth'
 
 export async function POST(req: NextRequest) {
   try {
-    const { ensureDefaultAdmin, getAccount, signToken, verifyPassword } = await import('@/lib/auth')
     await ensureDefaultAdmin()
     const { gameId, password } = await req.json()
     if (!gameId || !password) return Response.json({ error: 'Missing credentials' }, { status: 400 })
